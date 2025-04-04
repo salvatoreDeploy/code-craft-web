@@ -8,16 +8,21 @@ import {
   MousePointerClick,
 } from "lucide-react";
 import Image from "next/image";
-import logo from "../../assets/logo.svg";
-import gold from "../../assets/medal1.svg";
-import silver from "../../assets/medal2.svg";
-import cooper from "../../assets/medal3.svg";
+import logo from "../../../assets/logo.svg";
 import InviteLinkInputComponent from "./invite-link-input";
 import RankingComponent from "./ranking";
 import StatsComponent from "./stats";
 
-export default function InvitePage() {
-  const inviteLink = "http://localhost:3000/disahdoiasdujisao";
+interface InvitePageProps {
+  params: Promise<{
+    subscribedId: number;
+  }>;
+}
+
+export default async function InvitePage(props: InvitePageProps) {
+  const { subscribedId } = await props.params;
+
+  const inviteLink = `http://localhost:8080/subscripition/${subscribedId}`;
 
   return (
     <div className="min-h-dvh flex justify-between items-center gap-16 flex-col md:flex-row">
@@ -45,7 +50,7 @@ export default function InvitePage() {
 
           <InviteLinkInputComponent inviteLink={inviteLink} />
 
-          <StatsComponent />
+          <StatsComponent userId={subscribedId} />
         </div>
       </div>
 

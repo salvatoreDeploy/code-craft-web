@@ -2,10 +2,24 @@
 
 import Button from "@/componets/button";
 import { InputField, InputIcon, InputRoot } from "@/componets/input";
+import { type EventEntity, type UserEntity, registerToEvent } from "@/http/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Mail, User } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+export interface SubscriptionEntity {
+  subscriptionNumber?: number;
+  eventId?: EventEntity;
+  subscribedUserId?: UserEntity;
+  indicationUserId?: UserEntity;
+}
+
+export type RegisterParams = {
+  subscription: SubscriptionEntity;
+};
 
 const subscriptionSchema = z.object({
   name: z.string().min(2, "Digite seu nome completo"),
@@ -14,7 +28,19 @@ const subscriptionSchema = z.object({
 
 type SubscriptionSchema = z.infer<typeof subscriptionSchema>;
 
+export const getRegisterUrl = (prettyName: string, userId?: number) => {
+  const normalizedParams = new URLSearchParams();
+
+  return userId
+    ? `http://localhost:8080/subscripition/${prettyName}/${userId}`
+    : `http://localhost:8080/subscripition/${prettyName}`;
+};
+
 export default function SubscriptionFormComponent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const userId = searchParams.get("referrer");
+
   const {
     register,
     handleSubmit,
@@ -23,9 +49,17 @@ export default function SubscriptionFormComponent() {
     resolver: zodResolver(subscriptionSchema),
   });
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  function onSubscribe(data: any) {
-    console.log(data);
+  async function onSubscribe({ email, name }: SubscriptionSchema) {
+    const { subscriptionNumber } = await registerToEvent(
+      "codecraft-summit-2027",
+      {
+        email,
+        name,
+      },
+      Number(userId)
+    );
+
+    router.push(`/invite/${subscriptionNumber}`);
   }
 
   return (
